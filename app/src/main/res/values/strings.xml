@@ -3,4 +3,6 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="searchbar_hint">Enter Something</string>
+    <string name="go_to_address">Go To Address Auto Complete Page</string>
+    <string name="go_to_another_fragment">Go to Address Auto Complete Fragment</string>
 </resources>

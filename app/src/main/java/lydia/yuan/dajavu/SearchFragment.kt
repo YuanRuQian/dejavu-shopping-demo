@@ -9,7 +9,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,6 +28,7 @@ class SearchFragment : Fragment() {
     private val binding get() = _binding
     private var searchBar: SearchBar? = null
     private var searchView: SearchView? = null
+    private var button: Button? = null
 
     private var adapter = PokemonAdapter(emptyList())
 
@@ -53,9 +56,19 @@ class SearchFragment : Fragment() {
 
         searchBar = binding?.searchBar
         searchView = binding?.searchView
+        button = binding?.btnGoToAnotherFragment
+
+        button?.setOnClickListener {
+            // Replace the current fragment with the target fragment
+            val transaction: FragmentTransaction = requireFragmentManager().beginTransaction()
+            transaction.replace(R.id.fragment_container, AddressAutoCompleteFragment())
+            transaction.addToBackStack(null) // Optional: Adds the transaction to the back stack
+            transaction.commit()
+        }
 
         searchView?.setupWithSearchBar(searchBar)
 
+        // search on throttling
         searchView?.editText?.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 // This method is called to notify you that characters within `s` are about to be replaced with new text with a length of `after`.

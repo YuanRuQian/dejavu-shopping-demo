@@ -8,9 +8,18 @@
     android:theme="@style/ThemeOverlay.Dajavu.FullscreenContainer"
     tools:context=".SearchFragment">
 
+
         <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/btnGoToAnotherFragment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/go_to_another_fragment"
+                android:layout_margin="16dp"/>
+
             <com.google.android.material.search.SearchBar
                 android:id="@+id/search_bar"
                 android:layout_width="match_parent"
@@ -23,7 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:hint="@string/searchbar_hint"
-            app:layout_anchor="@id/search_bar">
+            app:layout_anchor="@id/appbar">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
