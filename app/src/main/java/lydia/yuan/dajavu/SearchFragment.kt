@@ -31,7 +31,14 @@ class SearchFragment : Fragment() {
 
     private val searchHandler = Handler(Looper.getMainLooper())
     private var searchRunnable: Runnable? = null
-    private val searchDelay: Long = 500 // Adjust the delay as needed (in milliseconds)
+    private val searchDelay: Long = 500
+
+    // In this example, the afterTextChanged method schedules a Runnable
+    // to be executed after a specified delay (searchDelay).
+    // If new text is entered before the delay expires,
+    // the previous Runnable is removed, and a new one is scheduled.
+    // This helps in throttling the performSearch function
+    // and avoids executing it too frequently.
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
