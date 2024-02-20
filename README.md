@@ -7,4 +7,4 @@
 ![Address Auto Complete](./screenshots/address_auto_complete.gif)
 
 ## API request with Pagination 
-![API request with Pagination](./screenshots/pagination_demo.gif)
+![API request with Pagination](./screenshots/swipe-to-refresh.gif)
