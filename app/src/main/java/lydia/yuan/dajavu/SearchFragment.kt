@@ -29,6 +29,7 @@ class SearchFragment : Fragment() {
     private var searchBar: SearchBar? = null
     private var searchView: SearchView? = null
     private var button: Button? = null
+    private var goToPaginationButton: Button? = null
 
     private var adapter = PokemonAdapter(emptyList())
 
@@ -57,11 +58,20 @@ class SearchFragment : Fragment() {
         searchBar = binding?.searchBar
         searchView = binding?.searchView
         button = binding?.btnGoToAnotherFragment
+        goToPaginationButton = binding?.btnGoToPaginationScreen
 
         button?.setOnClickListener {
             // Replace the current fragment with the target fragment
             val transaction: FragmentTransaction = requireFragmentManager().beginTransaction()
             transaction.replace(R.id.fragment_container, AddressAutoCompleteFragment())
+            transaction.addToBackStack(null) // Optional: Adds the transaction to the back stack
+            transaction.commit()
+        }
+
+        goToPaginationButton?.setOnClickListener {
+            // Replace the current fragment with the target fragment
+            val transaction: FragmentTransaction = requireFragmentManager().beginTransaction()
+            transaction.replace(R.id.fragment_container, PaginationScreenFragment())
             transaction.addToBackStack(null) // Optional: Adds the transaction to the back stack
             transaction.commit()
         }
