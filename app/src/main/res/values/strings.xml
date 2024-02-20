@@ -5,4 +5,5 @@
     <string name="searchbar_hint">Enter Something</string>
     <string name="go_to_address">Go To Address Auto Complete Page</string>
     <string name="go_to_another_fragment">Go to Address Auto Complete Fragment</string>
+    <string name="go_to_pagination_screen">Go to pagination screen</string>
 </resources>
