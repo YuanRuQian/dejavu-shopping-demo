@@ -9,20 +9,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import lydia.yuan.dajavu.MyApplication
 import lydia.yuan.dajavu.network.CitiesRepository
+import lydia.yuan.dajavu.network.City
 
 class CitiesViewModel(
     val citiesRepository: CitiesRepository
 ) : ViewModel() {
-    private val _cities = MutableStateFlow<List<String>>(emptyList())
+    private val _cities = MutableStateFlow<List<City>>(emptyList())
 
     val cities get() = _cities
 
     fun loadCities() {
         viewModelScope.launch {
             val citiesResponse = citiesRepository.getCities()
-            citiesResponse.documents.map { it.fields.name.stringValue }.let {
-                _cities.value = it
-            }
+            _cities.value = citiesResponse.data.values.toList()
         }
     }
 

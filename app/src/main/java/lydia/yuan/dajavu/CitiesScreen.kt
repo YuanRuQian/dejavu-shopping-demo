@@ -41,7 +41,7 @@ fun CitiesScreen(viewModel: CitiesViewModel = viewModel(factory = CitiesViewMode
                 ElevatedCard(
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    Text(text = cities[index], modifier = Modifier.padding(16.dp))
+                    Text(text = cities[index].name, modifier = Modifier.padding(16.dp))
                 }
             }
         }
