@@ -28,21 +28,15 @@ class SearchFragment : Fragment() {
     private val binding get() = _binding
     private var searchBar: SearchBar? = null
     private var searchView: SearchView? = null
-    private var button: Button? = null
+    private var btnGoToAnotherFragment: Button? = null
     private var goToPaginationButton: Button? = null
+    private var btnGoToTokenTestScreen: Button? = null
 
     private var adapter = PokemonAdapter(emptyList())
 
     private val searchHandler = Handler(Looper.getMainLooper())
     private var searchRunnable: Runnable? = null
     private val searchDelay: Long = 500
-
-    // In this example, the afterTextChanged method schedules a Runnable
-    // to be executed after a specified delay (searchDelay).
-    // If new text is entered before the delay expires,
-    // the previous Runnable is removed, and a new one is scheduled.
-    // This helps in throttling the performSearch function
-    // and avoids executing it too frequently.
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,11 +51,11 @@ class SearchFragment : Fragment() {
 
         searchBar = binding?.searchBar
         searchView = binding?.searchView
-        button = binding?.btnGoToAnotherFragment
+        btnGoToAnotherFragment = binding?.btnGoToAnotherFragment
         goToPaginationButton = binding?.btnGoToPaginationScreen
+        btnGoToTokenTestScreen = binding?.btnGoToTokenTestScreen
 
-        button?.setOnClickListener {
-            // Replace the current fragment with the target fragment
+        btnGoToAnotherFragment?.setOnClickListener {
             val transaction: FragmentTransaction = requireFragmentManager().beginTransaction()
             transaction.replace(R.id.fragment_container, AddressAutoCompleteFragment())
             transaction.addToBackStack(null) // Optional: Adds the transaction to the back stack
@@ -69,9 +63,15 @@ class SearchFragment : Fragment() {
         }
 
         goToPaginationButton?.setOnClickListener {
-            // Replace the current fragment with the target fragment
             val transaction: FragmentTransaction = requireFragmentManager().beginTransaction()
             transaction.replace(R.id.fragment_container, PaginationScreenFragment())
+            transaction.addToBackStack(null) // Optional: Adds the transaction to the back stack
+            transaction.commit()
+        }
+
+        btnGoToTokenTestScreen?.setOnClickListener {
+            val transaction: FragmentTransaction = requireFragmentManager().beginTransaction()
+            transaction.replace(R.id.fragment_container, TokenTestFragment())
             transaction.addToBackStack(null) // Optional: Adds the transaction to the back stack
             transaction.commit()
         }

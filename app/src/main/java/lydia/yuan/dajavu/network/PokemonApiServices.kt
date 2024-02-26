@@ -5,7 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-interface ApiServices {
+interface PokemonApiServices {
     @GET("/api/v2/egg-group/{name}")
     suspend fun getEggGroup(@Path("name") name: String): EggGroupResponse
 

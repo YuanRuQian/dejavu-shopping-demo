@@ -19,10 +19,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Define a variable to hold the Places API key.
         val apiKey = BuildConfig.PLACES_API_KEY
 
-        // Log an error if apiKey is not set.
         if (apiKey.isEmpty()) {
             Log.e("Places test", "No api key")
             finish()
@@ -54,7 +52,6 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-
     private fun showSignInPage() {
         setContentView(R.layout.activity_sign_in)
 
@@ -62,7 +59,6 @@ class MainActivity : AppCompatActivity() {
         editTextPassword = findViewById(R.id.editTextPassword)
         buttonSignIn = findViewById(R.id.buttonSignIn)
     }
-
 
     private fun showDefaultPage() {
         setContentView(R.layout.activity_main)
@@ -83,6 +79,4 @@ class MainActivity : AppCompatActivity() {
             showSignInPage()
         }
     }
-
-
 }

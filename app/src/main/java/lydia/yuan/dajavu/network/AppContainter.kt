@@ -17,6 +17,7 @@ import java.io.File
 // provide the app with access to the ArtworkRepository as a global state
 interface AppContainer {
     val pokemonRepository: PokemonRepository
+    val citiesRepository: CitiesRepository
 }
 
 class CachingInterceptor : Interceptor {
@@ -44,14 +45,19 @@ class CachingInterceptor : Interceptor {
 
 class DefaultAppContainer(application: Application) : AppContainer {
     override val pokemonRepository: PokemonRepository by lazy {
-        NetworkPokemonRepository(retrofitService)
+        NetworkPokemonRepository(pokemonRetrofitService)
     }
 
-    val loggingInterceptor = HttpLoggingInterceptor().apply {
+    override val citiesRepository: CitiesRepository by lazy {
+        NetworkCitiesRepository(citiesRetrofitService)
+    }
+
+
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY // You can use other levels like BASIC or HEADERS
     }
 
-    private val okHttpClient = OkHttpClient.Builder()
+    private val pokemonOkHttpClient = OkHttpClient.Builder()
         .cache(
             Cache(
                 directory = File(application.cacheDir, "http_cache"),
@@ -63,16 +69,32 @@ class DefaultAppContainer(application: Application) : AppContainer {
         .addInterceptor(CachingInterceptor())
         .build()
 
-    private val baseUrl = "https://pokeapi.co"
-
-    @OptIn(ExperimentalSerializationApi::class)
-    private val retrofit = Retrofit.Builder()
-        .addConverterFactory(Json.asConverterFactory("application/java".toMediaType()))
-        .client(okHttpClient) // Set the OkHttpClient with the logging interceptor
-        .baseUrl(baseUrl)
+    private val citiesOkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
         .build()
 
-    private val retrofitService by lazy {
-        retrofit.create(ApiServices::class.java)
+    private val pokemonBaseUrl = "https://pokeapi.co"
+    private val citiesBaseUrl = "https://firestore.googleapis.com"
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private val pokemonRetrofit = Retrofit.Builder()
+        .addConverterFactory(Json.asConverterFactory("application/java".toMediaType()))
+        .client(pokemonOkHttpClient) // Set the OkHttpClient with the logging interceptor
+        .baseUrl(pokemonBaseUrl)
+        .build()
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private val citiesRetrofit = Retrofit.Builder()
+        .addConverterFactory(Json.asConverterFactory("application/java".toMediaType()))
+        .client(citiesOkHttpClient) // Set the OkHttpClient with the logging interceptor
+        .baseUrl(citiesBaseUrl)
+        .build()
+
+    private val pokemonRetrofitService by lazy {
+        pokemonRetrofit.create(PokemonApiServices::class.java)
+    }
+
+    private val citiesRetrofitService by lazy {
+        citiesRetrofit.create(CitiesApiServices::class.java)
     }
 }
