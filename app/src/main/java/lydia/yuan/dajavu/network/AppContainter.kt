@@ -2,14 +2,19 @@ package lydia.yuan.dajavu.network
 
 
 import android.app.Application
+import android.util.Log
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import lydia.yuan.dajavu.utils.KeystoreUtils
+import okhttp3.Authenticator
 import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.Response
+import okhttp3.Route
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.io.File
@@ -21,24 +26,12 @@ interface AppContainer {
     val citiesRepository: CitiesRepository
 }
 
-//class TokenInterceptor : Interceptor {
-//    override fun intercept(chain: Interceptor.Chain): Response {
-//        val request = chain.request()
-//        val newRequest = request.newBuilder()
-//            .addHeader("Authorization", "Bearer $TOKEN")
-//            .build()
-//        return chain.proceed(newRequest)
-//    }
-//}
-
 class CachingInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val response = chain.proceed(request)
 
-        // Check if the response should be cached based on your conditions
         if (shouldCacheResponse(response)) {
-            // Add caching headers to the response
             return response.newBuilder()
                 .header("Cache-Control", "public, max-age=86400") // Adjust the max-age as needed
                 .build()
@@ -53,7 +46,33 @@ class CachingInterceptor : Interceptor {
     }
 }
 
-private val json = Json { ignoreUnknownKeys = true }
+
+class TokenInterceptor : Interceptor, Authenticator {
+
+    /**
+     * Interceptor class for setting of the headers for every request
+     */
+    override fun intercept(chain: Interceptor.Chain): Response {
+        var request = chain.request()
+        request = request.newBuilder()
+            .addHeader("bearer", KeystoreUtils.getToken())
+            .build()
+        return chain.proceed(request)
+    }
+
+    override fun authenticate(route: Route?, response: Response): Request? {
+        var requestAvailable: Request? = null
+        try {
+            requestAvailable = response.request.newBuilder()
+                .addHeader("bearer", KeystoreUtils.getToken())
+                .build()
+        } catch (ex: Exception) {
+            Log.d("TokenInterceptor", "authenticate: ${ex.message}")
+        }
+        return requestAvailable
+    }
+}
+
 
 class DefaultAppContainer(application: Application) : AppContainer {
     override val pokemonRepository: PokemonRepository by lazy {
@@ -68,7 +87,8 @@ class DefaultAppContainer(application: Application) : AppContainer {
         level =
             HttpLoggingInterceptor.Level.HEADERS // You can use other levels like BASIC or HEADERS
     }.apply {
-        level = HttpLoggingInterceptor.Level.BODY // You can use other levels like BASIC or HEADERS
+        level =
+            HttpLoggingInterceptor.Level.BODY // You can use other levels like BASIC or HEADERS
     }
 
     private val pokemonOkHttpClient = OkHttpClient.Builder()
@@ -85,7 +105,7 @@ class DefaultAppContainer(application: Application) : AppContainer {
 
     private val citiesOkHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
-        // .addInterceptor(TokenInterceptor())
+        .addInterceptor(TokenInterceptor())
         .build()
 
     private val pokemonBaseUrl = "https://pokeapi.co"
@@ -100,7 +120,9 @@ class DefaultAppContainer(application: Application) : AppContainer {
 
     @OptIn(ExperimentalSerializationApi::class)
     private val citiesRetrofit = Retrofit.Builder()
-        .addConverterFactory(Json { ignoreUnknownKeys = true }.asConverterFactory("application/java".toMediaType()))
+        .addConverterFactory(Json {
+            ignoreUnknownKeys = true
+        }.asConverterFactory("application/java".toMediaType()))
         .client(citiesOkHttpClient)
         .baseUrl(citiesBaseUrl)
         .build()

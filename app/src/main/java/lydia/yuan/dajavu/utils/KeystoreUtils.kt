@@ -72,5 +72,11 @@ class KeystoreUtils {
             cipher.init(Cipher.DECRYPT_MODE, getKey(), keySpec)
             return cipher.doFinal(encData).toString(UTF_8)
         }
+
+        fun clearToken() {
+            val keyStore = KeyStore.getInstance(keyStoreType)
+            keyStore.load(null)
+            keyStore.deleteEntry(keyStoreAlias)
+        }
     }
 }

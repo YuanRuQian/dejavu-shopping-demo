@@ -89,8 +89,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun signOut() {
-        FirebaseAuth.getInstance().signOut().apply {
-            showSignInPage()
-        }
+        FirebaseAuth.getInstance().signOut().run { KeystoreUtils.clearToken() }
+        showSignInPage()
     }
 }
