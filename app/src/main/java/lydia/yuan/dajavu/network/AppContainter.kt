@@ -21,6 +21,16 @@ interface AppContainer {
     val citiesRepository: CitiesRepository
 }
 
+//class TokenInterceptor : Interceptor {
+//    override fun intercept(chain: Interceptor.Chain): Response {
+//        val request = chain.request()
+//        val newRequest = request.newBuilder()
+//            .addHeader("Authorization", "Bearer $TOKEN")
+//            .build()
+//        return chain.proceed(newRequest)
+//    }
+//}
+
 class CachingInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()

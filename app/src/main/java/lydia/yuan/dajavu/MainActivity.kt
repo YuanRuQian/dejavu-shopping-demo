@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
+import lydia.yuan.dajavu.utils.KeystoreUtils
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +33,7 @@ class MainActivity : AppCompatActivity() {
         if (FirebaseAuth.getInstance().currentUser == null) {
             showSignInPage()
         } else {
+            cacheToken()
             showDefaultPage()
         }
     }
@@ -45,11 +47,23 @@ class MainActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     Toast.makeText(this, "Welcome, ${currentUser?.displayName}", Toast.LENGTH_SHORT).show()
-                    showDefaultPage()
+                    cacheToken()
                 } else {
                     Toast.makeText(this, "Sign in failed", Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+
+    private fun cacheToken() {
+        FirebaseAuth.getInstance().currentUser?.getIdToken(true)?.addOnSuccessListener {
+            Log.d("MainActivity", "Token: ${it.token}")
+            it.token?.let { it1 ->
+                KeystoreUtils.encryptWithKeyStore(it1)
+                Log.d("MainActivity", "Token saved to keystore")
+                Log.d("MainActivity", "Token retrieved from keystore: ${KeystoreUtils.getToken()}")
+            }
+            showDefaultPage()
+        }
     }
 
     private fun showSignInPage() {

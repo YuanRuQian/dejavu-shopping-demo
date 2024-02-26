@@ -1,81 +1,76 @@
 package lydia.yuan.dajavu.utils
 
-import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.util.Base64
-import io.github.nefilim.kjwt.JWT
-import io.github.nefilim.kjwt.sign
-import java.security.KeyPair
-import java.security.KeyPairGenerator
 import java.security.KeyStore
-import java.security.interfaces.ECPrivateKey
-import java.time.Instant
 import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.IvParameterSpec
+import kotlin.text.Charsets.UTF_8
 
 
 class KeystoreUtils {
-    fun generateAKeyPair(): KeyPair? {
-        val keyPairGenerator = KeyPairGenerator.getInstance(
-            KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore"
-        )
 
-        val keyGenParameterSpec = KeyGenParameterSpec.Builder(
-            "keystore_alias",
-            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-        )
-            .setDigests(KeyProperties.DIGEST_SHA256)
-            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
-            .build()
+    companion object {
 
-        keyPairGenerator.initialize(keyGenParameterSpec)
-        return keyPairGenerator.generateKeyPair()
-    }
+        lateinit var encryptedPairData: Pair<ByteArray, ByteArray>
 
-    fun encryptAndStoreToken(token: String, context: Context) {
-        val keyStore = KeyStore.getInstance("AndroidKeyStore")
-        keyStore.load(null)
-        val privateKeyEntry = keyStore.getEntry("keystore_alias", null) as KeyStore.PrivateKeyEntry
-        val publicKey = privateKeyEntry.certificate.publicKey
-        val cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding")
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey)
-        val encryptedBytes = cipher.doFinal(token.toByteArray())
-        val encryptedToken = Base64.encodeToString(encryptedBytes, Base64.DEFAULT)
-        // Store the encrypted token in SharedPreferences
-        val sharedPreferences =
-            context.getSharedPreferences("my_shared_preferences", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putString("token", encryptedToken).apply()
-    }
+        val cipherTransformation = "AES/CBC/PKCS7Padding"
 
-    fun decryptToken(keyPair: KeyPair, context: Context): String {
-        val cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding")
-        cipher.init(Cipher.DECRYPT_MODE, keyPair.private)
+        val keyStoreAlias = "token"
 
-        val encryptedToken: ByteArray = Base64.decode(
-            context.getSharedPreferences("my_shared_preferences", Context.MODE_PRIVATE)
-                .getString("token", ""), Base64.DEFAULT
-        )
+        val keyStoreType = "AndroidKeyStore"
 
-        val decryptedToken = cipher.doFinal(encryptedToken)
-        val originalToken = String(decryptedToken)
-        return originalToken
-    }
-
-    suspend fun generateJWT(): String {
-        val jwt = JWT.es256 {
-            subject("42")
-            issuer("lydia")
-            claim("name", "Lydia Yuan")
-            claim("admin", true)
-            issuedAt(Instant.now())
+        init {
+            getKeyGenerator()
+        }
+        fun encryptWithKeyStore(plainText: String): String {
+            encryptedPairData = getEncryptedDataPair(plainText)
+            return encryptedPairData.second.toString(UTF_8)
         }
 
-        val keyPair = generateAKeyPair()
-        val ecPrivateKey = keyPair?.private
-        if (ecPrivateKey != null) {
-            jwt.sign(ecPrivateKey as ECPrivateKey)
+        private fun getKeyGenerator() {
+            val keyGenerator =
+                KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, keyStoreType)
+            val keyGeneratorSpec = KeyGenParameterSpec.Builder(
+                keyStoreAlias,
+                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+            )
+                .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                .setUserAuthenticationRequired(false)
+                .build()
+            keyGenerator.init(keyGeneratorSpec)
+            keyGenerator.generateKey()
         }
-        return jwt.toString()
-    }
 
+        private fun getKey(): SecretKey {
+            val keyStore = KeyStore.getInstance(keyStoreType)
+            keyStore.load(null)
+            val secreteKeyEntry: KeyStore.SecretKeyEntry =
+                keyStore.getEntry(keyStoreAlias, null) as KeyStore.SecretKeyEntry
+            return secreteKeyEntry.secretKey
+        }
+
+        private fun getEncryptedDataPair(data: String): Pair<ByteArray, ByteArray> {
+            val cipher = Cipher.getInstance(cipherTransformation)
+            cipher.init(Cipher.ENCRYPT_MODE, getKey())
+
+            val iv: ByteArray = cipher.iv
+            val encryptedData = cipher.doFinal(data.toByteArray(UTF_8))
+            return Pair(iv, encryptedData)
+        }
+
+        fun getToken(): String {
+            return decryptData(encryptedPairData.first, encryptedPairData.second)
+        }
+
+        private fun decryptData(iv: ByteArray, encData: ByteArray): String {
+            val cipher = Cipher.getInstance(cipherTransformation)
+            val keySpec = IvParameterSpec(iv)
+            cipher.init(Cipher.DECRYPT_MODE, getKey(), keySpec)
+            return cipher.doFinal(encData).toString(UTF_8)
+        }
+    }
 }
