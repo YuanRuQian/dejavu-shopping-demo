@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="lydia.yuan.dajavu" />
+                  <option name="mobileSdkAppId" value="1:610900283746:android:ca158b088517c4e40b9c3b" />
+                  <option name="projectId" value="dejavu-shopping-demo" />
+                  <option name="projectNumber" value="610900283746" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

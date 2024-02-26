@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.accompanist.swiperefresh.SwipeRefreshState
+import io.github.nefilim.kjwt.JWT
+import io.github.nefilim.kjwt.sign
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -16,6 +18,9 @@ import lydia.yuan.dajavu.network.AbilityResponse
 import lydia.yuan.dajavu.network.EggGroupResponse
 import lydia.yuan.dajavu.network.PokemonRepository
 import lydia.yuan.dajavu.network.PokemonSpecy
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 class PokemonViewModel(
     val pokemonRepository: PokemonRepository
