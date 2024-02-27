@@ -16,15 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import lydia.yuan.dajavu.viewmodel.CitiesViewModel
+import lydia.yuan.dajavu.viewmodel.TokenViewModel
 
 @Composable
-fun CitiesScreen(viewModel: CitiesViewModel = viewModel(factory = CitiesViewModel.Factory)) {
-    val citiesData = viewModel.cities.collectAsState()
-    val cities = citiesData.value
+fun UserContent(viewModel: TokenViewModel = viewModel(factory = TokenViewModel.Factory)) {
 
     LaunchedEffect(key1 = true) {
-        viewModel.loadCities()
+        viewModel.loadUserContent()
     }
 
     Column(
@@ -32,18 +30,8 @@ fun CitiesScreen(viewModel: CitiesViewModel = viewModel(factory = CitiesViewMode
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Cities in Utah", style = MaterialTheme.typography.titleLarge)
+        Text(text = "User Content", style = MaterialTheme.typography.titleLarge)
 
         Divider()
-
-        LazyColumn {
-            items(cities.size) { index ->
-                ElevatedCard(
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Text(text = cities[index].name, modifier = Modifier.padding(16.dp))
-                }
-            }
-        }
     }
 }

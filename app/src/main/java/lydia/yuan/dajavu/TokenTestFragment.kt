@@ -32,7 +32,7 @@ class TokenTestFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MaterialTheme {
-                    CitiesScreen()
+                    UserContent()
                 }
             }
         }

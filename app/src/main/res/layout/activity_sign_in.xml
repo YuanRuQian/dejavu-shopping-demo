@@ -8,12 +8,11 @@
     tools:context=".MainActivity">
 
     <EditText
-        android:id="@+id/editTextEmail"
+        android:id="@+id/editTextUsername"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/email"
-        android:text="@string/default_account_email"
-        android:inputType="textEmailAddress"
+        android:hint="@string/username"
+        android:text="@string/default_account_username"
         android:layout_marginBottom="16dp"/>
 
     <EditText

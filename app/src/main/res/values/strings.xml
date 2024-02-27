@@ -8,8 +8,8 @@
     <string name="sign_out">Sign Out</string>
     <string name="sign_in">Sign In</string>
     <string name="password">Password</string>
-    <string name="email">Email</string>
-    <string name="default_account_email">irene@gmail.com</string>
     <string name="default_account_password">123456</string>
     <string name="go_to_token_test_screen">Go to Token Test Screen</string>
+    <string name="username">Username</string>
+    <string name="default_account_username">seulgi</string>
 </resources>

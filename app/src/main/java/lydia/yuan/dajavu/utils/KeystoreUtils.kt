@@ -2,6 +2,7 @@ package lydia.yuan.dajavu.utils
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.util.Log
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -25,7 +26,8 @@ class KeystoreUtils {
         init {
             getKeyGenerator()
         }
-        fun encryptWithKeyStore(plainText: String): String {
+        fun updateToken(plainText: String): String {
+            Log.d("KeystoreUtils", "updateToken: $plainText")
             encryptedPairData = getEncryptedDataPair(plainText)
             return encryptedPairData.second.toString(UTF_8)
         }
@@ -63,6 +65,9 @@ class KeystoreUtils {
         }
 
         fun getToken(): String {
+            if (!::encryptedPairData.isInitialized) {
+                return ""
+            }
             return decryptData(encryptedPairData.first, encryptedPairData.second)
         }
 
@@ -76,7 +81,7 @@ class KeystoreUtils {
         fun clearToken() {
             val keyStore = KeyStore.getInstance(keyStoreType)
             keyStore.load(null)
-            keyStore.deleteEntry(keyStoreAlias)
+            updateToken("")
         }
     }
 }

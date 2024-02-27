@@ -6,21 +6,27 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import lydia.yuan.dajavu.utils.KeystoreUtils
+import lydia.yuan.dajavu.viewmodel.TokenViewModel
+
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var editTextEmail: EditText
+    private lateinit var editTextUsername: EditText
     private lateinit var editTextPassword: EditText
     private lateinit var buttonSignIn: Button
+    private lateinit var tokenViewModel: TokenViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val apiKey = BuildConfig.PLACES_API_KEY
+
+        tokenViewModel = ViewModelProvider(this, TokenViewModel.Factory)[TokenViewModel::class.java]
 
         if (apiKey.isEmpty()) {
             Log.e("Places test", "No api key")
@@ -28,48 +34,31 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        // KeystoreUtils.updateToken("42")
+
+        KeystoreUtils.updateToken(BuildConfig.TEST_TOKEN)
+
         Places.initializeWithNewPlacesApiEnabled(applicationContext, apiKey)
 
-        if (FirebaseAuth.getInstance().currentUser == null) {
-            showSignInPage()
-        } else {
-            cacheToken()
-            showDefaultPage()
-        }
+        // if (KeystoreUtils.getToken().isEmpty()) {
+            // showSignInPage()
+       // } else {
+             showDefaultPage()
+//        }
     }
 
     fun signIn(view: android.view.View) {
-        val email = editTextEmail.text.toString()
+        val email = editTextUsername.text.toString()
         val password = editTextPassword.text.toString()
 
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val currentUser = FirebaseAuth.getInstance().currentUser
-                    Toast.makeText(this, "Welcome, ${currentUser?.displayName}", Toast.LENGTH_SHORT).show()
-                    cacheToken()
-                } else {
-                    Toast.makeText(this, "Sign in failed", Toast.LENGTH_SHORT).show()
-                }
-            }
-    }
-
-    private fun cacheToken() {
-        FirebaseAuth.getInstance().currentUser?.getIdToken(true)?.addOnSuccessListener {
-            Log.d("MainActivity", "Token: ${it.token}")
-            it.token?.let { it1 ->
-                KeystoreUtils.encryptWithKeyStore(it1)
-                Log.d("MainActivity", "Token saved to keystore")
-                Log.d("MainActivity", "Token retrieved from keystore: ${KeystoreUtils.getToken()}")
-            }
-            showDefaultPage()
-        }
+        tokenViewModel.signIn(email, password)
+        showDefaultPage()
     }
 
     private fun showSignInPage() {
         setContentView(R.layout.activity_sign_in)
 
-        editTextEmail = findViewById(R.id.editTextEmail)
+        editTextUsername = findViewById(R.id.editTextUsername)
         editTextPassword = findViewById(R.id.editTextPassword)
         buttonSignIn = findViewById(R.id.buttonSignIn)
     }
@@ -89,7 +78,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun signOut() {
-        FirebaseAuth.getInstance().signOut().run { KeystoreUtils.clearToken() }
+        KeystoreUtils.clearToken()
         showSignInPage()
     }
 }

@@ -23,7 +23,8 @@ import java.io.File
 // provide the app with access to the ArtworkRepository as a global state
 interface AppContainer {
     val pokemonRepository: PokemonRepository
-    val citiesRepository: CitiesRepository
+    val tokenRepository: TokenRepository
+    val testTokenRepository: TestTokenRepository
 }
 
 class CachingInterceptor : Interceptor {
@@ -55,7 +56,7 @@ class TokenInterceptor : Interceptor, Authenticator {
     override fun intercept(chain: Interceptor.Chain): Response {
         var request = chain.request()
         request = request.newBuilder()
-            .addHeader("bearer", KeystoreUtils.getToken())
+            .addHeader("x-access-token", KeystoreUtils.getToken())
             .build()
         return chain.proceed(request)
     }
@@ -64,7 +65,7 @@ class TokenInterceptor : Interceptor, Authenticator {
         var requestAvailable: Request? = null
         try {
             requestAvailable = response.request.newBuilder()
-                .addHeader("bearer", KeystoreUtils.getToken())
+                .addHeader("Authorization", "Bearer ${KeystoreUtils.getToken()}")
                 .build()
         } catch (ex: Exception) {
             Log.d("TokenInterceptor", "authenticate: ${ex.message}")
@@ -79,14 +80,15 @@ class DefaultAppContainer(application: Application) : AppContainer {
         NetworkPokemonRepository(pokemonRetrofitService)
     }
 
-    override val citiesRepository: CitiesRepository by lazy {
-        NetworkCitiesRepository(citiesRetrofitService)
+    override val tokenRepository: TokenRepository by lazy {
+        NetworkTokenRepository(tokenRetrofitService)
+    }
+
+    override val testTokenRepository: TestTokenRepository by lazy {
+        NetworkTestTokenRepository(testTokenRetrofitService)
     }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level =
-            HttpLoggingInterceptor.Level.HEADERS // You can use other levels like BASIC or HEADERS
-    }.apply {
         level =
             HttpLoggingInterceptor.Level.BODY // You can use other levels like BASIC or HEADERS
     }
@@ -103,13 +105,18 @@ class DefaultAppContainer(application: Application) : AppContainer {
         .addInterceptor(CachingInterceptor())
         .build()
 
-    private val citiesOkHttpClient = OkHttpClient.Builder()
+    private val tokenOkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .build()
+
+    private val testTokenOkHttpClient = OkHttpClient.Builder()
+        // .authenticator(TokenInterceptor())
         .addInterceptor(loggingInterceptor)
         .addInterceptor(TokenInterceptor())
         .build()
 
     private val pokemonBaseUrl = "https://pokeapi.co"
-    private val citiesBaseUrl = "https://dejavu-shopping-demo-default-rtdb.firebaseio.com"
+    private val tokenBaseUrl = "http://10.0.2.2:8080"
 
     @OptIn(ExperimentalSerializationApi::class)
     private val pokemonRetrofit = Retrofit.Builder()
@@ -119,19 +126,29 @@ class DefaultAppContainer(application: Application) : AppContainer {
         .build()
 
     @OptIn(ExperimentalSerializationApi::class)
-    private val citiesRetrofit = Retrofit.Builder()
+    private val tokenRetrofit = Retrofit.Builder()
         .addConverterFactory(Json {
             ignoreUnknownKeys = true
         }.asConverterFactory("application/java".toMediaType()))
-        .client(citiesOkHttpClient)
-        .baseUrl(citiesBaseUrl)
+        .client(tokenOkHttpClient)
+        .baseUrl(tokenBaseUrl)
+        .build()
+
+    private val testTokenRetrofit = Retrofit.Builder()
+        .addConverterFactory(Json.asConverterFactory("application/java".toMediaType()))
+        .client(testTokenOkHttpClient)
+        .baseUrl(tokenBaseUrl)
         .build()
 
     private val pokemonRetrofitService by lazy {
         pokemonRetrofit.create(PokemonApiServices::class.java)
     }
 
-    private val citiesRetrofitService by lazy {
-        citiesRetrofit.create(CitiesApiServices::class.java)
+    private val tokenRetrofitService by lazy {
+        tokenRetrofit.create(TokenApiServices::class.java)
+    }
+
+    private val testTokenRetrofitService by lazy {
+        testTokenRetrofit.create(TestTokenApiServices::class.java)
     }
 }
