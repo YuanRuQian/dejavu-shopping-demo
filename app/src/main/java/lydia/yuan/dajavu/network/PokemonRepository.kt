@@ -7,9 +7,9 @@ interface PokemonRepository {
 }
 
 class NetworkPokemonRepository(
-    private val apiServices: ApiServices
+    private val pokemonApiServices: PokemonApiServices
 ) : PokemonRepository {
-    override suspend fun getEggGroup(name: String): EggGroupResponse = apiServices.getEggGroup(name)
+    override suspend fun getEggGroup(name: String): EggGroupResponse = pokemonApiServices.getEggGroup(name)
 
-    override suspend fun getAbility(limit: Int, offset: Int): AbilityResponse = apiServices.getAbility(limit, offset)
+    override suspend fun getAbility(limit: Int, offset: Int): AbilityResponse = pokemonApiServices.getAbility(limit, offset)
 }

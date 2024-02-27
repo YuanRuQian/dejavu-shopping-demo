@@ -27,6 +27,13 @@
                 android:text="@string/go_to_pagination_screen"
                 android:layout_margin="16dp"/>
 
+            <Button
+                android:id="@+id/btnGoToTokenTestScreen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/go_to_token_test_screen"
+                android:layout_margin="16dp"/>
+
             <com.google.android.material.search.SearchBar
                 android:id="@+id/search_bar"
                 android:layout_width="match_parent"

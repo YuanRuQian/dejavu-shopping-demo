@@ -1,9 +1,15 @@
 <resources>
     <string name="app_name">dajavu</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="searchbar_hint">Enter Something</string>
     <string name="go_to_address">Go To Address Auto Complete Page</string>
     <string name="go_to_another_fragment">Go to Address Auto Complete Fragment</string>
     <string name="go_to_pagination_screen">Go to pagination screen</string>
+    <string name="go_to_token_test_fragment">Go to Token Test Fragment</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="sign_in">Sign In</string>
+    <string name="password">Password</string>
+    <string name="default_account_password">123456</string>
+    <string name="go_to_token_test_screen">Go to Token Test Screen</string>
+    <string name="username">Username</string>
+    <string name="default_account_username">seulgi</string>
 </resources>
