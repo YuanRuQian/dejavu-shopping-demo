@@ -34,10 +34,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // KeystoreUtils.updateToken("42")
-
-        KeystoreUtils.updateToken(BuildConfig.TEST_TOKEN)
-
         Places.initializeWithNewPlacesApiEnabled(applicationContext, apiKey)
 
         // if (KeystoreUtils.getToken().isEmpty()) {

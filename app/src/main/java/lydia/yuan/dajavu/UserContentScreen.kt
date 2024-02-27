@@ -16,12 +16,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import lydia.yuan.dajavu.utils.KeystoreUtils
 import lydia.yuan.dajavu.viewmodel.TokenViewModel
 
 @Composable
 fun UserContent(viewModel: TokenViewModel = viewModel(factory = TokenViewModel.Factory)) {
 
     LaunchedEffect(key1 = true) {
+        KeystoreUtils.updateToken(BuildConfig.TEST_TOKEN)
         viewModel.loadUserContent()
     }
 
