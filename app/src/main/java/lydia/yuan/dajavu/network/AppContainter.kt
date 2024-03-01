@@ -6,6 +6,7 @@ import android.util.Log
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import lydia.yuan.dajavu.BuildConfig
 import lydia.yuan.dajavu.utils.KeystoreUtils
 import okhttp3.Authenticator
 import okhttp3.Cache
@@ -25,6 +26,22 @@ interface AppContainer {
     val pokemonRepository: PokemonRepository
     val tokenRepository: TokenRepository
     val testTokenRepository: TestTokenRepository
+    val googlePlaceRepository: GooglePlacesRepository
+}
+
+class GooglePlaceInterceptor : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val request = chain.request()
+        val response = chain.proceed(request)
+
+
+        return response.newBuilder()
+            .addHeader("X-Goog-Api-Key", BuildConfig.PLACES_API_KEY)
+            .addHeader("X-Goog-FieldMask", "places.displayName,places.formattedAddress")
+            .build()
+
+    }
+
 }
 
 class CachingInterceptor : Interceptor {
@@ -88,6 +105,10 @@ class DefaultAppContainer(application: Application) : AppContainer {
         NetworkTestTokenRepository(testTokenRetrofitService)
     }
 
+    override val googlePlaceRepository: GooglePlacesRepository by lazy {
+        NetworkGooglePlacesRepository(googlePlaceRetrofitService)
+    }
+
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level =
             HttpLoggingInterceptor.Level.BODY // You can use other levels like BASIC or HEADERS
@@ -105,6 +126,11 @@ class DefaultAppContainer(application: Application) : AppContainer {
         .addInterceptor(CachingInterceptor())
         .build()
 
+    private val googlePlaceOkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .addInterceptor(GooglePlaceInterceptor())
+        .build()
+
     private val tokenOkHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
         .build()
@@ -117,6 +143,7 @@ class DefaultAppContainer(application: Application) : AppContainer {
 
     private val pokemonBaseUrl = "https://pokeapi.co"
     private val tokenBaseUrl = "http://10.0.2.2:8080"
+    private val googlePlaceBaseUrl = "https://places.googleapis.com"
 
     @OptIn(ExperimentalSerializationApi::class)
     private val pokemonRetrofit = Retrofit.Builder()
@@ -140,6 +167,12 @@ class DefaultAppContainer(application: Application) : AppContainer {
         .baseUrl(tokenBaseUrl)
         .build()
 
+    private val googlePlaceRetrofit = Retrofit.Builder()
+        .addConverterFactory(Json.asConverterFactory("application/java".toMediaType()))
+        .client(googlePlaceOkHttpClient)
+        .baseUrl(googlePlaceBaseUrl)
+        .build()
+
     private val pokemonRetrofitService by lazy {
         pokemonRetrofit.create(PokemonApiServices::class.java)
     }
@@ -150,5 +183,9 @@ class DefaultAppContainer(application: Application) : AppContainer {
 
     private val testTokenRetrofitService by lazy {
         testTokenRetrofit.create(TestTokenApiServices::class.java)
+    }
+
+    private val googlePlaceRetrofitService by lazy {
+        googlePlaceRetrofit.create(GooglePlaceApiServices::class.java)
     }
 }

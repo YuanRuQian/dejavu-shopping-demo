@@ -5,12 +5,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import lydia.yuan.dajavu.MyApplication
-import lydia.yuan.dajavu.network.TokenRepository
 import lydia.yuan.dajavu.network.LoginRequest
 import lydia.yuan.dajavu.network.TestTokenRepository
+import lydia.yuan.dajavu.network.TokenRepository
 import lydia.yuan.dajavu.utils.KeystoreUtils
 
 class TokenViewModel(
