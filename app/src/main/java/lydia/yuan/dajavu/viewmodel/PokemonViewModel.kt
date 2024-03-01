@@ -13,23 +13,17 @@ import kotlinx.coroutines.launch
 import lydia.yuan.dajavu.MyApplication
 import lydia.yuan.dajavu.network.Ability
 import lydia.yuan.dajavu.network.AbilityResponse
-import lydia.yuan.dajavu.network.EggGroupResponse
 import lydia.yuan.dajavu.network.PokemonRepository
-import lydia.yuan.dajavu.network.PokemonSpecy
-import java.time.Duration
 
 class PokemonViewModel(
     val pokemonRepository: PokemonRepository
 ) : ViewModel() {
-    private val _pokemon = MutableStateFlow<List<PokemonSpecy>>(emptyList())
-    val pokemon get() = _pokemon
-
     private val _ability = MutableStateFlow<List<Ability>>(emptyList())
     val ability get() = _ability
 
     private val _isAbilityRefreshing = MutableStateFlow(SwipeRefreshState(false))
     val isAbilityRefreshing get() = _isAbilityRefreshing
-    private var hasLogOutJobRunning = false
+    private var isToggleOperationRunning = false
 
     private var _userLikeThis = MutableStateFlow(false)
     val userLikeThis get() = _userLikeThis
@@ -49,11 +43,11 @@ class PokemonViewModel(
 
     fun throttledToggleLikeButtonStatus(delayDuration: Long) {
         viewModelScope.launch {
-            if (hasLogOutJobRunning) return@launch
-            hasLogOutJobRunning = true
+            if (isToggleOperationRunning) return@launch
+            isToggleOperationRunning = true
             toggleLikeButtonStatus()
             delay(delayDuration)
-            hasLogOutJobRunning = false
+            isToggleOperationRunning = false
         }
     }
 
@@ -77,27 +71,6 @@ class PokemonViewModel(
             } finally {
                 _isAbilityRefreshing.value = SwipeRefreshState(false)
             }
-        }
-    }
-
-    fun getEggGroup(name: String) {
-        viewModelScope.launch {
-            val pokemonSpecies: EggGroupResponse
-            try {
-                Log.d("PokemonViewModel", "getEggGroup: $name")
-                pokemonSpecies = pokemonRepository.getEggGroup(name)
-                if (pokemonSpecies.pokemonSpecies.isEmpty()) {
-                    Log.d("PokemonViewModel", "getEggGroup: empty")
-                } else {
-                    _pokemon.value = pokemonSpecies.pokemonSpecies
-                    Log.d("PokemonViewModel", "getEggGroup: ${pokemonSpecies.pokemonSpecies}")
-                }
-            } catch (e: Exception) {
-                _pokemon.value = emptyList()
-                Log.e("PokemonViewModel", "getEggGroup: ${e.message}")
-            }
-
-            Log.d("PokemonViewModel", "getEggGroup: ${_pokemon.value}")
         }
     }
 
