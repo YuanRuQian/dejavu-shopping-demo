@@ -5,9 +5,9 @@
 
 ![Optimistic UI + Throttling: Like Button](./screenshots/throttled_liked_button.gif)
 
-## Search Bar with Throttling
+## Search Bar with Debounced API Request
 
-![Search Bar with Throttling](./screenshots/search_bar.gif)
+![Search Bar with Debounced API Request](./screenshots/debouce_search_bar.gif)
 
 ## Address Auto Complete
 
