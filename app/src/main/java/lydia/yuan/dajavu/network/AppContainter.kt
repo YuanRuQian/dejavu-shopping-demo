@@ -5,8 +5,10 @@ import android.util.Log
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import lydia.yuan.dajavu.BuildConfig
 import lydia.yuan.dajavu.utils.KeystoreUtils
 import okhttp3.Authenticator
+import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -25,12 +27,20 @@ interface AppContainer {
     val googlePlaceRepository: GooglePlacesRepository
 }
 
-class GooglePlaceIntercepter : Interceptor {
+class GooglePlaceInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        var request = chain.request()
-        request = request.newBuilder()
-            .addHeader("X-Goog-FieldMask", "places.displayName,places.formattedAddress")
+        val original = chain.request()
+        val originalHttpUrl: HttpUrl = original.url
+
+        val url: HttpUrl = originalHttpUrl.newBuilder()
+            .addQueryParameter("key", BuildConfig.PLACES_API_KEY)
+            .addQueryParameter("fields", "places.displayName,places.formattedAddress")
             .build()
+
+        val requestBuilder: Request.Builder = original.newBuilder()
+            .url(url)
+
+        val request = requestBuilder.build()
         return chain.proceed(request)
     }
 }
@@ -94,6 +104,7 @@ class DefaultAppContainer : AppContainer {
 
     private val googlePlaceOkHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .addInterceptor(GooglePlaceInterceptor())
         .build()
 
     private val tokenOkHttpClient = OkHttpClient.Builder()
