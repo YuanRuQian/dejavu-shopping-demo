@@ -75,6 +75,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun signOut() {
         KeystoreUtils.clearToken()
-        showSignInPage()
+        // showSignInPage()
     }
 }

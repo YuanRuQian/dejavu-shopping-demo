@@ -10,6 +10,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
@@ -17,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.search.SearchBar
 import com.google.android.material.search.SearchView
+import kotlinx.coroutines.launch
 import lydia.yuan.dajavu.databinding.FragmentSearchBinding
 import lydia.yuan.dajavu.viewmodel.PokemonViewModel
 
@@ -28,6 +31,8 @@ class SearchFragment : Fragment() {
     private val binding get() = _binding
     private var searchBar: SearchBar? = null
     private var searchView: SearchView? = null
+    private var tvLikeButtonStatus: TextView? = null
+    private var ibLike: ImageButton? = null
     private var btnGoToAnotherFragment: Button? = null
     private var goToPaginationButton: Button? = null
     private var btnGoToTokenTestScreen: Button? = null
@@ -51,9 +56,31 @@ class SearchFragment : Fragment() {
 
         searchBar = binding?.searchBar
         searchView = binding?.searchView
+        ibLike = binding?.ibLike
+        tvLikeButtonStatus = binding?.tvLikeButtonStatus
         btnGoToAnotherFragment = binding?.btnGoToAnotherFragment
         goToPaginationButton = binding?.btnGoToPaginationScreen
         btnGoToTokenTestScreen = binding?.btnGoToTokenTestScreen
+
+        ibLike?.setOnClickListener {
+            pokemonViewModel.throttledToggleLikeButtonStatus(250)
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            pokemonViewModel.userLikeThis.collect {
+                if (it) {
+                    ibLike?.setImageResource(R.drawable.heart_filled)
+                } else {
+                    ibLike?.setImageResource(R.drawable.heart)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            pokemonViewModel.userLikeThisText.collect {
+                tvLikeButtonStatus?.text = it
+            }
+        }
 
         btnGoToAnotherFragment?.setOnClickListener {
             val transaction: FragmentTransaction = requireFragmentManager().beginTransaction()

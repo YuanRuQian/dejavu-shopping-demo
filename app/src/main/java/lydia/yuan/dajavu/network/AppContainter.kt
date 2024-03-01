@@ -110,7 +110,7 @@ class DefaultAppContainer(application: Application) : AppContainer {
         .build()
 
     private val testTokenOkHttpClient = OkHttpClient.Builder()
-        // .authenticator(TokenInterceptor())
+        .authenticator(TokenInterceptor())
         .addInterceptor(loggingInterceptor)
         .addInterceptor(TokenInterceptor())
         .build()

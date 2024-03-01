@@ -7,8 +7,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.accompanist.swiperefresh.SwipeRefreshState
-import io.github.nefilim.kjwt.JWT
-import io.github.nefilim.kjwt.sign
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -18,9 +16,7 @@ import lydia.yuan.dajavu.network.AbilityResponse
 import lydia.yuan.dajavu.network.EggGroupResponse
 import lydia.yuan.dajavu.network.PokemonRepository
 import lydia.yuan.dajavu.network.PokemonSpecy
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
+import java.time.Duration
 
 class PokemonViewModel(
     val pokemonRepository: PokemonRepository
@@ -33,6 +29,33 @@ class PokemonViewModel(
 
     private val _isAbilityRefreshing = MutableStateFlow(SwipeRefreshState(false))
     val isAbilityRefreshing get() = _isAbilityRefreshing
+    private var hasLogOutJobRunning = false
+
+    private var _userLikeThis = MutableStateFlow(false)
+    val userLikeThis get() = _userLikeThis
+
+    private val USER_LIKE_THIS = "User Likes This Stuff"
+    private val USER_FEELS_NOTHING_ABOUT_THIS = "User Feels Nothing About This Stuff"
+
+    private var _userLikeThisText = MutableStateFlow(USER_FEELS_NOTHING_ABOUT_THIS)
+    val userLikeThisText get() = _userLikeThisText
+
+    private suspend fun toggleLikeButtonStatus() {
+        _userLikeThis.value = !_userLikeThis.value
+        delay(100)
+        _userLikeThisText.value =
+            if (_userLikeThis.value) USER_LIKE_THIS else USER_FEELS_NOTHING_ABOUT_THIS
+    }
+
+    fun throttledToggleLikeButtonStatus(delayDuration: Long) {
+        viewModelScope.launch {
+            if (hasLogOutJobRunning) return@launch
+            hasLogOutJobRunning = true
+            toggleLikeButtonStatus()
+            delay(delayDuration)
+            hasLogOutJobRunning = false
+        }
+    }
 
     fun getAbility(limit: Int, offset: Int) {
         if (isAbilityRefreshing.value.isRefreshing) return
