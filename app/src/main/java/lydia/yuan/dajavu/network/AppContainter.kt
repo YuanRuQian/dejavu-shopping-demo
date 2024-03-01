@@ -1,15 +1,12 @@
 package lydia.yuan.dajavu.network
 
 
-import android.app.Application
 import android.util.Log
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import lydia.yuan.dajavu.BuildConfig
 import lydia.yuan.dajavu.utils.KeystoreUtils
 import okhttp3.Authenticator
-import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -18,7 +15,6 @@ import okhttp3.Response
 import okhttp3.Route
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import java.io.File
 
 
 // provide the app with access to the ArtworkRepository as a global state
@@ -29,41 +25,15 @@ interface AppContainer {
     val googlePlaceRepository: GooglePlacesRepository
 }
 
-class GooglePlaceInterceptor : Interceptor {
+class GooglePlaceIntercepter : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request()
-        val response = chain.proceed(request)
-
-
-        return response.newBuilder()
-            .addHeader("X-Goog-Api-Key", BuildConfig.PLACES_API_KEY)
+        var request = chain.request()
+        request = request.newBuilder()
             .addHeader("X-Goog-FieldMask", "places.displayName,places.formattedAddress")
             .build()
-
-    }
-
-}
-
-class CachingInterceptor : Interceptor {
-    override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request()
-        val response = chain.proceed(request)
-
-        if (shouldCacheResponse(response)) {
-            return response.newBuilder()
-                .header("Cache-Control", "public, max-age=86400") // Adjust the max-age as needed
-                .build()
-        }
-
-        return response
-    }
-
-    private fun shouldCacheResponse(response: Response): Boolean {
-        // Cache only when the response status code is 200 (OK)
-        return response.isSuccessful
+        return chain.proceed(request)
     }
 }
-
 
 class TokenInterceptor : Interceptor, Authenticator {
 
@@ -92,7 +62,11 @@ class TokenInterceptor : Interceptor, Authenticator {
 }
 
 
-class DefaultAppContainer(application: Application) : AppContainer {
+private val json = Json {
+    ignoreUnknownKeys = true
+}
+
+class DefaultAppContainer : AppContainer {
     override val pokemonRepository: PokemonRepository by lazy {
         NetworkPokemonRepository(pokemonRetrofitService)
     }
@@ -115,20 +89,11 @@ class DefaultAppContainer(application: Application) : AppContainer {
     }
 
     private val pokemonOkHttpClient = OkHttpClient.Builder()
-        .cache(
-            Cache(
-                directory = File(application.cacheDir, "http_cache"),
-                // $0.05 worth of phone storage in 2020
-                maxSize = 50L * 1024L * 1024L // 50 MiB
-            )
-        )
         .addInterceptor(loggingInterceptor)
-        .addInterceptor(CachingInterceptor())
         .build()
 
     private val googlePlaceOkHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
-        .addInterceptor(GooglePlaceInterceptor())
         .build()
 
     private val tokenOkHttpClient = OkHttpClient.Builder()
@@ -154,21 +119,21 @@ class DefaultAppContainer(application: Application) : AppContainer {
 
     @OptIn(ExperimentalSerializationApi::class)
     private val tokenRetrofit = Retrofit.Builder()
-        .addConverterFactory(Json {
-            ignoreUnknownKeys = true
-        }.asConverterFactory("application/java".toMediaType()))
+        .addConverterFactory(json.asConverterFactory("application/java".toMediaType()))
         .client(tokenOkHttpClient)
         .baseUrl(tokenBaseUrl)
         .build()
 
+    @OptIn(ExperimentalSerializationApi::class)
     private val testTokenRetrofit = Retrofit.Builder()
-        .addConverterFactory(Json.asConverterFactory("application/java".toMediaType()))
+        .addConverterFactory(json.asConverterFactory("application/java".toMediaType()))
         .client(testTokenOkHttpClient)
         .baseUrl(tokenBaseUrl)
         .build()
 
+    @OptIn(ExperimentalSerializationApi::class)
     private val googlePlaceRetrofit = Retrofit.Builder()
-        .addConverterFactory(Json.asConverterFactory("application/java".toMediaType()))
+        .addConverterFactory(json.asConverterFactory("application/java".toMediaType()))
         .client(googlePlaceOkHttpClient)
         .baseUrl(googlePlaceBaseUrl)
         .build()
