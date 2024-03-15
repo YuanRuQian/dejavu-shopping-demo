@@ -16,3 +16,11 @@
 ## API request with Pagination 
 
 ![API request with Pagination](./screenshots/swipe-to-refresh.gif)
+
+## How to Test Token Storage Features
+
+- Git clone the repository: https://github.com/bezkoder/node-js-jwt-auth-mongodb
+- Start the node server
+- Use Postman to register, login, and logout to get the token
+- Setup token in your `secrets.properties`
+- Run the app and test the token storage features
