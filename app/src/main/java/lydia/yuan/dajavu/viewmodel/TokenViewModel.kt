@@ -1,5 +1,6 @@
 package lydia.yuan.dajavu.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -10,21 +11,21 @@ import lydia.yuan.dajavu.MyApplication
 import lydia.yuan.dajavu.network.LoginRequest
 import lydia.yuan.dajavu.network.TestTokenRepository
 import lydia.yuan.dajavu.network.TokenRepository
-import lydia.yuan.dajavu.utils.KeystoreUtils
 
 class TokenViewModel(
     val tokenRepository: TokenRepository,
     val testTokenRepository: TestTokenRepository
 ) : ViewModel() {
 
-    fun signIn(username: String, password: String) {
+    fun signIn(username: String, password: String, context: Context) {
         viewModelScope.launch {
             val loginResponse = LoginRequest(
                 username = username,
                 password = password
             )
             val response = tokenRepository.signIn(loginResponse)
-            KeystoreUtils.updateToken(response.accessToken)
+            val application = context.applicationContext as MyApplication
+            application.container.keyStoreUtils.saveToken(response.accessToken)
         }
     }
 

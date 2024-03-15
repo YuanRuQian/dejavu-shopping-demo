@@ -3,6 +3,7 @@ package lydia.yuan.dajavu
 import android.app.Application
 import lydia.yuan.dajavu.network.AppContainer
 import lydia.yuan.dajavu.network.DefaultAppContainer
+import lydia.yuan.dajavu.utils.KeyStoreUtils
 
 
 class MyApplication: Application() {
@@ -11,6 +12,6 @@ class MyApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        container = DefaultAppContainer()
+        container = DefaultAppContainer(this)
     }
 }

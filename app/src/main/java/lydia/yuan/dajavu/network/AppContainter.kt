@@ -6,7 +6,8 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import lydia.yuan.dajavu.BuildConfig
-import lydia.yuan.dajavu.utils.KeystoreUtils
+import lydia.yuan.dajavu.MyApplication
+import lydia.yuan.dajavu.utils.KeyStoreUtils
 import okhttp3.Authenticator
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
@@ -25,6 +26,7 @@ interface AppContainer {
     val tokenRepository: TokenRepository
     val testTokenRepository: TestTokenRepository
     val googlePlaceRepository: GooglePlacesRepository
+    val keyStoreUtils: KeyStoreUtils
 }
 
 class GooglePlaceInterceptor : Interceptor {
@@ -45,7 +47,7 @@ class GooglePlaceInterceptor : Interceptor {
     }
 }
 
-class TokenInterceptor : Interceptor, Authenticator {
+class TokenInterceptor(private val keyStoreUtils: KeyStoreUtils) : Interceptor, Authenticator {
 
     /**
      * Interceptor class for setting of the headers for every request
@@ -53,7 +55,7 @@ class TokenInterceptor : Interceptor, Authenticator {
     override fun intercept(chain: Interceptor.Chain): Response {
         var request = chain.request()
         request = request.newBuilder()
-            .addHeader("x-access-token", KeystoreUtils.getToken())
+            .addHeader("x-access-token", keyStoreUtils.getToken() ?: "")
             .build()
         return chain.proceed(request)
     }
@@ -62,7 +64,7 @@ class TokenInterceptor : Interceptor, Authenticator {
         var requestAvailable: Request? = null
         try {
             requestAvailable = response.request.newBuilder()
-                .addHeader("Authorization", "Bearer ${KeystoreUtils.getToken()}")
+                .addHeader("Authorization", "Bearer ${keyStoreUtils.getToken()}")
                 .build()
         } catch (ex: Exception) {
             Log.d("TokenInterceptor", "authenticate: ${ex.message}")
@@ -76,7 +78,7 @@ private val json = Json {
     ignoreUnknownKeys = true
 }
 
-class DefaultAppContainer : AppContainer {
+class DefaultAppContainer(application: MyApplication) : AppContainer {
     override val pokemonRepository: PokemonRepository by lazy {
         NetworkPokemonRepository(pokemonRetrofitService)
     }
@@ -91,6 +93,9 @@ class DefaultAppContainer : AppContainer {
 
     override val googlePlaceRepository: GooglePlacesRepository by lazy {
         NetworkGooglePlacesRepository(googlePlaceRetrofitService)
+    }
+    override val keyStoreUtils: KeyStoreUtils by lazy {
+        KeyStoreUtils(application)
     }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -112,9 +117,9 @@ class DefaultAppContainer : AppContainer {
         .build()
 
     private val testTokenOkHttpClient = OkHttpClient.Builder()
-        .authenticator(TokenInterceptor())
+        .authenticator(TokenInterceptor(keyStoreUtils))
         .addInterceptor(loggingInterceptor)
-        .addInterceptor(TokenInterceptor())
+        .addInterceptor(TokenInterceptor(keyStoreUtils))
         .build()
 
     private val pokemonBaseUrl = "https://pokeapi.co"
