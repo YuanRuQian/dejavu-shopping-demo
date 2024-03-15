@@ -4,13 +4,10 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.firebase.auth.FirebaseAuth
-import lydia.yuan.dajavu.utils.KeystoreUtils
 import lydia.yuan.dajavu.viewmodel.TokenViewModel
 
 
@@ -46,8 +43,7 @@ class MainActivity : AppCompatActivity() {
     fun signIn(view: android.view.View) {
         val email = editTextUsername.text.toString()
         val password = editTextPassword.text.toString()
-
-        tokenViewModel.signIn(email, password)
+        tokenViewModel.signIn(email, password, applicationContext)
         showDefaultPage()
     }
 
@@ -74,7 +70,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun signOut() {
-        KeystoreUtils.clearToken()
-        // showSignInPage()
+        (application as MyApplication).container.keyStoreUtils.clearToken()
     }
 }
