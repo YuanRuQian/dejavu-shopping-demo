@@ -1,5 +1,6 @@
 package lydia.yuan.dajavu
 
+import android.media.session.MediaSession.Token
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -8,7 +9,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import lydia.yuan.dajavu.utils.TokenStore
 import lydia.yuan.dajavu.viewmodel.TokenViewModel
+import java.security.KeyStore
 
 
 class MainActivity : AppCompatActivity() {
@@ -20,6 +23,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        TokenStore.init(applicationContext)
 
         val apiKey = BuildConfig.PLACES_API_KEY
 
@@ -70,6 +75,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun signOut() {
-        (application as MyApplication).container.keyStoreUtils.clearToken()
+        TokenStore.removeToken()
     }
 }

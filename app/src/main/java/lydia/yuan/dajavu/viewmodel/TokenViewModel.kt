@@ -11,6 +11,7 @@ import lydia.yuan.dajavu.MyApplication
 import lydia.yuan.dajavu.network.LoginRequest
 import lydia.yuan.dajavu.network.TestTokenRepository
 import lydia.yuan.dajavu.network.TokenRepository
+import lydia.yuan.dajavu.utils.TokenStore
 
 class TokenViewModel(
     val tokenRepository: TokenRepository,
@@ -25,7 +26,7 @@ class TokenViewModel(
             )
             val response = tokenRepository.signIn(loginResponse)
             val application = context.applicationContext as MyApplication
-            application.container.keyStoreUtils.saveToken(response.accessToken)
+            TokenStore.setToken(response.accessToken)
         }
     }
 

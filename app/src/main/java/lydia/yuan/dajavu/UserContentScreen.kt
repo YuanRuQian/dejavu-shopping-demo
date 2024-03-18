@@ -13,15 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import lydia.yuan.dajavu.utils.TokenStore
 import lydia.yuan.dajavu.viewmodel.TokenViewModel
 
 @Composable
 fun UserContent(viewModel: TokenViewModel = viewModel(factory = TokenViewModel.Factory)) {
 
-    val context = LocalContext.current
-
     LaunchedEffect(key1 = true) {
-        (context.applicationContext as MyApplication).container.keyStoreUtils.saveToken(BuildConfig.TEST_TOKEN)
+        TokenStore.setToken(BuildConfig.TEST_TOKEN)
         viewModel.loadUserContent()
     }
 
